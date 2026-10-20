@@ -289,6 +289,7 @@ tr.early td{color:var(--muted)}
       <button class="tab" role="tab" id="t-years" data-tab="years" aria-selected="false">Reg Season Yearly Log</button>
       <button class="tab" role="tab" id="t-playoffs" data-tab="playoffs" aria-selected="false">Playoffs</button>
       <button class="tab" role="tab" id="t-move" data-tab="move" aria-selected="false">Movements</button>
+      <button class="tab" role="tab" id="t-luck" data-tab="luck" aria-selected="false">Luck</button>
       <button class="tab" role="tab" id="t-records" data-tab="records" aria-selected="false">Superlatives</button>
     </nav>
     <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true" aria-label="English">🇺🇸 EN</button><button type="button" data-lang="es" aria-pressed="false" aria-label="Español">🇻🇪 ES</button></div>
@@ -301,6 +302,7 @@ tr.early td{color:var(--muted)}
   <section role="tabpanel" id="p-playoffs" aria-labelledby="t-playoffs" hidden></section>
   <section role="tabpanel" id="p-years" aria-labelledby="t-years" hidden></section>
   <section role="tabpanel" id="p-move" aria-labelledby="t-move" hidden></section>
+  <section role="tabpanel" id="p-luck" aria-labelledby="t-luck" hidden></section>
   <section role="tabpanel" id="p-records" aria-labelledby="t-records" hidden></section>
 </main>
 <script>
@@ -388,7 +390,7 @@ seasons.forEach(s => {
 /* ---------- state ---------- */
 let me = store.get('hist-me'); if (me && !SUM[me]) me = null;
 let viewing = me;
-let tab = ['me','standings','years','playoffs','move','records'].includes(location.hash.slice(1)) ? location.hash.slice(1) : (location.hash.slice(1)==='reg' ? 'years' : 'me');
+let tab = ['me','standings','years','playoffs','move','luck','records'].includes(location.hash.slice(1)) ? location.hash.slice(1) : (location.hash.slice(1)==='reg' ? 'years' : 'me');
 let bracketYear = seasons.filter(s=>games.some(g=>g.s===s && g.r==='Semifinal')).at(-1);
 let sortKey = 'titles', sortDir = -1;
 
@@ -1377,6 +1379,54 @@ function movesTab(){
   return secHead(h) + subnav('move',[['trades',T('Trades','Cambios')],['fa',T('Free agency','Agentes libres')],['draft',T('Draft','Draft')],['players',T('Players','Jugadores')]]) + sec[SUBS.move];
 }
 
+
+/* ---------- luck tab ---------- */
+let lkY = 'all';
+const LK = (() => {
+  const wk = {};
+  R.filter(r=>r[0]!==2020).forEach(r => { (wk[r[0]+'|'+r[1]] ??= []).push(r[3], r[5]); });
+  const ents = [];
+  R.filter(r=>r[0]!==2020).forEach(r => {
+    const all = wk[r[0]+'|'+r[1]], n = all.length, mu = all.reduce((x,y)=>x+y,0)/n;
+    [[r[2],r[3],r[4],r[5],r[6]==='a'?1:r[6]==='t'?.5:0],[r[4],r[5],r[2],r[3],r[6]==='b'?1:r[6]==='t'?.5:0]].forEach(([i,v,oi,ov,w]) => {
+      const beat = all.filter(x=>x<v).length + (all.filter(x=>x===v).length-1)/2;
+      ents.push({s:r[0],k:r[1],o:O[i],vs:O[oi],v,ov,w,n,mu,x:beat/(n-1),rank:all.filter(x=>x>v).length+1});
+    });
+  });
+  return ents;
+})();
+function luckView(){
+  const ys = [...new Set(LK.map(e=>e.s))].sort((a,b)=>b-a);
+  if (lkY!=='all' && !ys.includes(lkY)) lkY = 'all';
+  const E = LK.filter(e => lkY==='all' || e.s===lkY);
+  const M = {};
+  E.forEach(e => { const m = (M[e.o] ??= {o:e.o,g:0,a:0,x:0,sw:0,sww:0,ul:0,lw:0,t3:0,b3:0,opp:0}); m.g++; m.a+=e.w; m.x+=e.x;
+    if (e.x>.5){ m.sw++; if (e.w===1) m.sww++; if (e.w===0) m.ul++; } if (e.x<.5 && e.w===1) m.lw++;
+    if (e.rank<=3 && e.w===0) m.t3++; if (e.rank>=e.n-2 && e.w===1) m.b3++; m.opp += e.ov/e.mu; });
+  const rows = Object.values(M).map(m=>({...m,d:m.a-m.x,op:(m.opp/m.g-1)*100})).sort((a,b)=>b.d-a.d||b.g-a.g);
+  const sg = n => (n>0?'+':'')+n.toFixed(1);
+  const dc = n => n>0.05?'w':n<-0.05?'l':'';
+  const top = rows[0], bot = rows.at(-1);
+  const lossBy = E.filter(e=>e.w===0).sort((a,b)=>a.rank-b.rank||b.v/b.mu-a.v/a.mu).slice(0,5);
+  const winBy = E.filter(e=>e.w===1).sort((a,b)=>b.rank-a.rank||a.v/a.mu-b.v/b.mu).slice(0,5);
+  const mine = (e,won) => `<li><span class="big">${T('#','#')}${e.rank} ${T('of','de')} ${e.n}</span> · ${esc(e.o)}<br><span class="d">${e.s}, ${T('week','semana')} ${e.k}: ${fmt(e.v)} ${won?T('beat','venció a'):T('lost to','perdió con')} ${esc(e.vs)} ${fmt(e.ov)}</span></li>`;
+  const scope = lkY==='all' ? T('all seasons','todas las temporadas') : lkY;
+  return `<div class="block"><h2>${T('Luck','Suerte')}</h2>
+    <p class="sub">${T('The league is head to head, so your record depends on who you face. Every week we also compare each team with everybody else: beating more than half the league is an expected win (xW). Luck is actual wins minus xW. Regular season only, 2020 short season left out.','La liga es cara a cara, así que tu récord depende de a quién enfrentas. Cada semana también comparamos a cada equipo contra todos los demás: ganarle a más de la mitad de la liga es una victoria esperada (xW). La suerte es victorias reales menos xW. Solo temporada regular, sin la temporada corta de 2020.')}</p>
+    <div class="seasons" role="group" aria-label="Season"><button type="button" data-lky="all" aria-pressed="${lkY==='all'}">${T('All time','Histórico')}</button>${ys.map(y=>`<button type="button" data-lky="${y}" aria-pressed="${y===lkY}">${y}</button>`).join('')}</div>
+    <div class="tiles" style="margin-top:12px">
+      <div class="tile"><span class="k">${T('Luckiest','Con más suerte')}</span><span class="v">${sg(top.d)}</span><span class="s">${esc(top.o)} · ${scope}</span></div>
+      <div class="tile"><span class="k">${T('Unluckiest','Con menos suerte')}</span><span class="v">${sg(bot.d)}</span><span class="s">${esc(bot.o)} · ${scope}</span></div>
+    </div></div>
+  <div class="block"><h3>${T('Wins vs expected wins','Victorias vs victorias esperadas')} · ${scope}</h3>
+    <div class="tbl"><table><thead><tr><th>${T('Manager','Manager')}</th><th class="r">${T('Weeks','Sem.')}</th><th class="r">${T('Wins','V')}</th><th class="r">xW</th><th class="r">${T('Luck','Suerte')}</th><th class="r" title="${T('Weeks beating more than half the league','Semanas ganándole a más de la mitad de la liga')}">${T('Should win','Debía ganar')}</th><th class="r" title="${T('Lost in a week above half the league','Perdió en semana por encima de la mitad')}">${T('Unlucky L','D con mala suerte')}</th><th class="r" title="${T('Won in a week below half the league','Ganó en semana por debajo de la mitad')}">${T('Lucky W','V con suerte')}</th><th class="r" title="${T('Lost while scoring top 3 of the week','Perdió anotando top 3 de la semana')}">${T('Lost top 3','Perdió top 3')}</th><th class="r" title="${T('Won while scoring bottom 3 of the week','Ganó anotando bottom 3 de la semana')}">${T('Won bottom 3','Ganó bottom 3')}</th><th class="r" title="${T('Average opponent score vs league average','Puntos promedio del rival vs promedio de la liga')}">${T('Opp. strength','Rivales')}</th></tr></thead>
+    <tbody>${rows.map(m=>`<tr class="link${m.o===me?' me':''}" data-open="${esc(m.o)}"><td>${esc(m.o)}</td><td class="r">${m.g}</td><td class="r">${fmt(m.a)}</td><td class="r">${m.x.toFixed(1)}</td><td class="r ${dc(m.d)}">${sg(m.d)}</td><td class="r">${m.sww}/${m.sw}</td><td class="r">${m.ul}</td><td class="r">${m.lw}</td><td class="r">${m.t3}</td><td class="r">${m.b3}</td><td class="r">${m.op>0?'+':''}${m.op.toFixed(1)}%</td></tr>`).join('')}</tbody></table></div>
+    <p class="note">${T('Should win shows wins out of the weeks a team beat more than half the league. Opp. strength above 0% means a harder schedule than average, below means an easier one.','Debía ganar muestra victorias de las semanas en que el equipo le ganó a más de la mitad de la liga. Rivales sobre 0% significa un calendario más difícil que el promedio, bajo 0% uno más fácil.')}</p></div>
+  <div class="block"><h2>${T('Best and worst breaks','Mejores y peores rachas de suerte')} · ${scope}</h2><div class="recs">
+    <div class="rec"><h3>${T('Unluckiest losses','Derrotas con peor suerte')}</h3><span class="d">${T('Highest weekly rank, still lost','Mejor posición de la semana y aun así perdió')}</span><ol>${lossBy.map(e=>mine(e,false)).join('')}</ol></div>
+    <div class="rec"><h3>${T('Luckiest wins','Victorias con más suerte')}</h3><span class="d">${T('Lowest weekly rank, still won','Peor posición de la semana y aun así ganó')}</span><ol>${winBy.map(e=>mine(e,true)).join('')}</ol></div>
+  </div></div>`;
+}
 function render(){
   renderWho();
   const pm = $('#p-me');
@@ -1386,12 +1436,14 @@ function render(){
   $('#p-playoffs').innerHTML = playoffsView();
   $('#p-years').innerHTML = yearsTab();
   $('#p-move').innerHTML = movesTab();
+  $('#p-luck').innerHTML = luckView();
   $('#p-records').innerHTML = recordsView();
   xlate(document.body);
 }
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-login],[data-open],[data-sort],[data-year],[data-h2hf],[data-h2hb],[data-regm],[data-recsec],[data-sub],[data-lang],[data-myear]'); if (!t) return;
+  const t = e.target.closest('[data-login],[data-open],[data-sort],[data-year],[data-h2hf],[data-h2hb],[data-regm],[data-recsec],[data-sub],[data-lang],[data-myear],[data-lky]'); if (!t) return;
   if (t.dataset.lang){ if (t.dataset.lang !== lang) setLang(t.dataset.lang); return; }
+  if (t.dataset.lky){ lkY = t.dataset.lky==='all' ? 'all' : +t.dataset.lky; render(); return; }
   if (t.dataset.myear){ mvYear = t.dataset.myear==='all' ? 'all' : +t.dataset.myear; render(); return; }
   if (t.dataset.regm){ regMode = t.dataset.regm; render(); return; }
   if (t.dataset.sub){ const [tb,k] = t.dataset.sub.split(':'); SUBS[tb] = k; render(); return; }
