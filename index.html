@@ -632,7 +632,7 @@ function standingsView(){
   <div class="block"><h2>Champions wall</h2>${hang?`<div class="hang">${hang}</div>`:''}<div class="wall">${champs}</div>${ASTNOTE()}</div>`;
 }
 
-const CP = [["Jesus Luzardo", 70, 23, [2021, 2022, 2025, 2026]], ["Luis Castillo", 64, 42, [2018, 2019, 2021, 2023]], ["Zack Wheeler", 59, 11, [2018, 2019, 2024]], ["Cody Bellinger", 54, 48, [2021, 2022, 2024]], ["Seiya Suzuki", 48, 43, [2024, 2025]], ["Justin Verlander", 47, 31, [2019, 2022]], ["Juan Soto", 43, 36, [2018, 2023]], ["Mookie Betts", 43, 43, [2024, 2025]], ["Jazz Chisholm Jr.", 37, 32, [2023, 2025]], ["Tyler Glasnow", 36, 22, [2023, 2024]]];
+const CP = [["Jesus Luzardo", 4, [["Eduardo Colmenares", [2021, 2026]], ["Daniel Del Gallego", [2022]], ["Mike Dentes", [2025]]]], ["Luis Castillo", 4, [["Mitchell Marlow", [2018, 2019]], ["Eduardo Colmenares", [2021]], ["Ivan Trujillo", [2023]]]], ["Zack Wheeler", 3, [["Mitchell Marlow", [2018, 2019, 2024]]]], ["Cody Bellinger", 3, [["Eduardo Colmenares", [2021]], ["Daniel Del Gallego", [2022]], ["Mitchell Marlow", [2024]]]], ["Seiya Suzuki", 2, [["Mitchell Marlow", [2024]], ["Mike Dentes", [2025]]]], ["Justin Verlander", 2, [["Mitchell Marlow", [2019]], ["Daniel Del Gallego", [2022]]]], ["Juan Soto", 2, [["Mitchell Marlow", [2018]], ["Ivan Trujillo", [2023]]]], ["Mookie Betts", 2, [["Mitchell Marlow", [2024]], ["Mike Dentes", [2025]]]], ["Jazz Chisholm Jr.", 2, [["Ivan Trujillo", [2023]], ["Mike Dentes", [2025]]]], ["Tyler Glasnow", 2, [["Ivan Trujillo", [2023]], ["Mitchell Marlow", [2024]]]]];
 function playoffsView(){
   const yrs = seasons.filter(s=>games.some(g=>g.s===s));
   const g = games.filter(x=>x.s===bracketYear);
@@ -652,8 +652,8 @@ function playoffsView(){
     ${riv.map(([k,v])=>{const [a,b]=k.split('|'); const wa=v.filter(x=>x.win===a).length, wb=v.length-wa; const lead = wa===wb?T(`Tied ${wa}–${wb}`,`Empatados ${wa}–${wb}`):T(`${esc(wa>wb?a:b)} leads ${Math.max(wa,wb)}–${Math.min(wa,wb)}`,`${esc(wa>wb?a:b)} lidera ${Math.max(wa,wb)}–${Math.min(wa,wb)}`); return `<tr><td>${esc(a)} vs ${esc(b)}</td><td class="r">${v.length}</td><td>${lead}</td><td class="wrapname">${v.sort((p,q)=>p.s-q.s).map(x=>`${x.s} ${x.r==='Quarterfinal'?T('QF','CF'):x.r==='Semifinal'?'SF':x.r==='Final'?'Final':ordn(3)}`).join(', ')}</td></tr>`}).join('')}
     </tbody></table></div></div>
   <div class="block"><h2>${T('Players on the most champion teams','Jugadores en más equipos campeones')}</h2><p class="sub">${T('Counts only a player\'s time with a team that went on to win that title, and only titles where he was rostered more than 5 weeks, so short stints do not count. Lineup data starts in 2018, so the 2012 to 2017 titles are not included.','Cuenta solo el tiempo del jugador con un equipo que ganó ese título, y solo títulos con más de 5 semanas en el roster, para que las pasadas cortas no cuenten. Los lineups empiezan en 2018, así que los títulos de 2012 a 2017 no están incluidos.')}</p>
-    <div class="tbl"><table><thead><tr><th>#</th><th>${T('Player','Jugador')}</th><th class="r">${T('Titles','Títulos')}</th><th>${T('Seasons','Temporadas')}</th><th class="r">${T('Weeks on roster','Semanas en roster')}</th><th class="r">${T('Weeks started','Semanas de titular')}</th></tr></thead><tbody>
-    ${CP.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r[0])}</td><td class="r">${r[3].length}</td><td>${r[3].join(', ')}</td><td class="r">${r[1]}</td><td class="r">${r[2]}</td></tr>`).join('')}
+    <div class="tbl"><table><thead><tr><th>#</th><th>${T('Player','Jugador')}</th><th class="r">${T('Titles','Títulos')}</th><th>${T('Champion with','Campeón con')}</th></tr></thead><tbody>
+    ${CP.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r[0])}</td><td class="r">${r[1]}</td><td style="white-space:normal;min-width:260px">${r[2].map(([m,y])=>`${esc(m)} (${y.length>1?y.slice(0,-1).join(', ')+T(' and ',' y ')+y[y.length-1]:y[0]})`).join(', ')}</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 
