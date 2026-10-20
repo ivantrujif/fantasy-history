@@ -248,6 +248,13 @@ tr.early td{color:var(--muted)}
 .cs .yy{font-family:var(--head);font-weight:600;font-size:.8rem;margin-top:3px}
 .cs.c1 .yy{color:var(--gold)}
 
+.champ .hero{background:linear-gradient(115deg,#F6D56B 0,#E3B54B 38%,#C9962B 70%,#F3D77A 100%)!important;border-bottom:5px solid #8A6410!important;color:#2B1D00!important}
+.champ .hero::before{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.28) 0 2px,transparent 2px 14px);opacity:.5}
+.champ .hero h1,.champ .hero .meta{color:#2B1D00!important}
+.champ .hero .cs .yy{color:#fff!important;background:rgba(43,29,0,.6)!important}
+.champ .tile{border-top-color:#C9962B!important}
+.champ h3{border-left-color:#C9962B!important}
+.champban{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;padding:8px 14px;border-radius:10px;background:linear-gradient(90deg,#8A6410,#E3B54B 20%,#F6D56B 50%,#E3B54B 80%,#8A6410);color:#2B1D00;font-family:var(--head);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .themed .hero{position:relative;overflow:hidden;border-radius:14px;padding:18px 20px;background:var(--hbg);border-bottom:5px solid var(--ml);color:var(--mi)}
 .themed .hero::before{content:"";position:absolute;inset:0;background-image:var(--pat);opacity:.22;pointer-events:none}
 .themed .hero .block{position:relative;z-index:1}
@@ -565,7 +572,12 @@ const PATS = {
  asterisks:"<svg xmlns='http://www.w3.org/2000/svg' width='70' height='60'><text x='6' y='34' font-size='34' font-weight='700' fill='#FEDB00' font-family='Georgia,serif'>*</text><text x='40' y='58' font-size='26' font-weight='700' fill='#fff' font-family='Georgia,serif'>*</text></svg>",
  stars:"<svg xmlns='http://www.w3.org/2000/svg' width='84' height='64'><text x='8' y='30' font-size='24' fill='#fff'>★</text><text x='50' y='58' font-size='16' fill='#fff'>★</text></svg>"
 };
+const CURCH = (()=>{ const y=Math.max(...H.filter(h=>h.f===1).map(h=>h.s)); const c=H.find(h=>h.s===y&&h.f===1); return c?{o:c.o,s:y}:null; })();
 function cardView(o){
+  if (CURCH && o===CURCH.o){
+    const th = THEMES[o]||['#C9962B','#F6D56B','#C9962B','#2B1D00'];
+    return `<div class="themed champ" style="--ma:${th[0]};--mb:${th[1]};--ml:#C9962B;--mi:#2B1D00;--hbg:#E3B54B;--pat:none"><div class="champban"><span>👑</span><span>${T(`Reigning champion · ${CURCH.s}`,`Campeón vigente · ${CURCH.s}`)}</span><span>👑</span></div>${cardView0(o)}</div>`;
+  }
   const th = THEMES[o];
   if (!th) return cardView0(o);
   const [a,b,l,ink,pat] = th;
