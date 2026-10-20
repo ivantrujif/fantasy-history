@@ -257,6 +257,7 @@ tr.early td{color:var(--muted)}
 .pick button.goldbtn{background:linear-gradient(115deg,#F6D56B 0,#E3B54B 40%,#C9962B 75%,#F3D77A 100%);border-color:#8A6410;color:#2B1D00;font-weight:600;box-shadow:0 2px 6px rgba(138,100,16,.4)}
 .pick button.goldbtn .t{color:#2B1D00}
 .pick button.goldbtn:hover{border-color:#2B1D00}
+.rolban{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;padding:8px 14px;border-radius:10px;background:var(--ma);border:2px solid var(--ml);color:var(--mi);font-family:var(--head);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .champban{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;padding:8px 14px;border-radius:10px;background:linear-gradient(90deg,#8A6410,#E3B54B 20%,#F6D56B 50%,#E3B54B 80%,#8A6410);color:#2B1D00;font-family:var(--head);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .themed .hero{position:relative;overflow:hidden;border-radius:14px;padding:18px 20px;background:var(--hbg);border-bottom:5px solid var(--ml);color:var(--mi)}
 .themed .hero::before{content:"";position:absolute;inset:0;background-image:var(--pat);opacity:.22;pointer-events:none}
@@ -576,6 +577,7 @@ const PATS = {
  stars:"<svg xmlns='http://www.w3.org/2000/svg' width='84' height='64'><text x='8' y='30' font-size='24' fill='#fff'>★</text><text x='50' y='58' font-size='16' fill='#fff'>★</text></svg>"
 };
 const CURCH = (()=>{ const y=Math.max(...H.filter(h=>h.f===1).map(h=>h.s)); const c=H.find(h=>h.s===y&&h.f===1); return c?{o:c.o,s:y}:null; })();
+const ROLES = {'Mitchell Marlow':['🐐','GOAT','GOAT'],'Ivan Trujillo':['⚖️','Commissioner','Comisionado'],'Pierre Jabbour':['💼','Executive Vice President','Vicepresidente Ejecutivo']};
 function cardView(o){
   if (CURCH && o===CURCH.o){
     const th = THEMES[o]||['#C9962B','#F6D56B','#C9962B','#2B1D00'];
@@ -586,7 +588,8 @@ function cardView(o){
   const [a,b,l,ink,pat] = th;
   const bg = pat==='pinstripes' ? `repeating-linear-gradient(90deg,transparent 0 11px,rgba(212,160,23,.35) 11px 12px),linear-gradient(#0A1F44,#0A1F44)` : o==='Rolando Curiel' ? `linear-gradient(100deg,#012169 0,#012169 46%,#E4002B 46.2%,#E4002B 70%,#00843D 70.2%,#00843D 100%)` : pat==='stripes' ? `linear-gradient(rgba(255,255,255,.6),rgba(255,255,255,.6)),repeating-linear-gradient(90deg,#74ACDF 0 30px,#fff 30px 60px)` : `linear-gradient(100deg,${a} 0,${a} 56%,${b} 56.2%,${b} 100%)`;
   const pu = PATS[pat] ? `url('data:image/svg+xml,${encodeURIComponent(PATS[pat]).replace(/'/g,'%27')}')` : 'none';
-  return `<div class="themed" style="--ma:${a};--mb:${b};--ml:${l};--mi:${ink};--hbg:${bg};--pat:${pu}">${cardView0(o)}</div>`;
+  const rb = ROLES[o] ? `<div class="rolban"><span>${ROLES[o][0]}</span><span>${T(ROLES[o][1],ROLES[o][2])}</span><span>${ROLES[o][0]}</span></div>` : '';
+  return `<div class="themed" style="--ma:${a};--mb:${b};--ml:${l};--mi:${ink};--hbg:${bg};--pat:${pu}">${rb}${cardView0(o)}</div>`;
 }
 
 function ppgChart(o){
