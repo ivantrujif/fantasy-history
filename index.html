@@ -1393,6 +1393,10 @@ const LK = (() => {
       ents.push({s:r[0],k:r[1],o:O[i],vs:O[oi],v,ov,w,n,mu,x:beat/(n-1),rank:all.filter(x=>x>v).length+1});
     });
   });
+  const med = {}; const bw = {};
+  ents.forEach(e => { (bw[e.s] ??= {})[e.k] = e.mu; });
+  Object.entries(bw).forEach(([y,d]) => { const v = Object.values(d).sort((a,b)=>a-b); med[y] = v[Math.floor(v.length/2)]; });
+  ents.forEach(e => { const q = e.mu/med[e.s]; e.reg = q>=.75 && q<=1.25; });
   return ents;
 })();
 function luckView(){
@@ -1407,8 +1411,8 @@ function luckView(){
   const sg = n => (n>0?'+':'')+n.toFixed(1);
   const dc = n => n>0.05?'w':n<-0.05?'l':'';
   const top = rows[0], bot = rows.at(-1);
-  const lossBy = E.filter(e=>e.w===0 && e.rank===2).sort((a,b)=>b.v-a.v).slice(0,5);
-  const winBy = E.filter(e=>e.w===1).sort((a,b)=>a.v/a.mu-b.v/b.mu||b.rank-a.rank).slice(0,5);
+  const lossBy = E.filter(e=>e.w===0 && e.reg).sort((a,b)=>b.v-a.v).slice(0,5);
+  const winBy = E.filter(e=>e.w===1 && e.reg).sort((a,b)=>a.v-b.v).slice(0,5);
   const mine = (e,won) => `<li><span class="big">${T('#','#')}${e.rank} ${T('of','de')} ${e.n}</span> · ${esc(e.o)}<br><span class="d">${e.s}, ${T('week','semana')} ${e.k}: ${fmt(e.v)} ${won?T('beat','venció a'):T('lost to','perdió con')} ${esc(e.vs)} ${fmt(e.ov)}</span></li>`;
   const scope = lkY==='all' ? T('all seasons','todas las temporadas') : lkY;
   return `<div class="block"><h2>${T('Luck','Suerte')}</h2>
@@ -1422,9 +1426,9 @@ function luckView(){
     <div class="tbl"><table><thead><tr><th>${T('Manager','Manager')}</th><th class="r">${T('Weeks','Sem.')}</th><th class="r">${T('Wins','V')}</th><th class="r">xW</th><th class="r">${T('Luck','Suerte')}</th><th class="r" title="${T('Weeks beating more than half the league','Semanas ganándole a más de la mitad de la liga')}">${T('Should win','Debía ganar')}</th><th class="r" title="${T('Lost in a week above half the league','Perdió en semana por encima de la mitad')}">${T('Unlucky L','D con mala suerte')}</th><th class="r" title="${T('Won in a week below half the league','Ganó en semana por debajo de la mitad')}">${T('Lucky W','V con suerte')}</th><th class="r" title="${T('Lost while scoring top 3 of the week','Perdió anotando top 3 de la semana')}">${T('Lost top 3','Perdió top 3')}</th><th class="r" title="${T('Won while scoring bottom 3 of the week','Ganó anotando bottom 3 de la semana')}">${T('Won bottom 3','Ganó bottom 3')}</th><th class="r" title="${T('Average opponent score vs league average','Puntos promedio del rival vs promedio de la liga')}">${T('Opp. strength','Rivales')}</th></tr></thead>
     <tbody>${rows.map(m=>`<tr class="link${m.o===me?' me':''}" data-open="${esc(m.o)}"><td>${esc(m.o)}</td><td class="r">${m.g}</td><td class="r">${fmt(m.a)}</td><td class="r">${m.x.toFixed(1)}</td><td class="r ${dc(m.d)}">${sg(m.d)}</td><td class="r">${m.sww}/${m.sw}</td><td class="r">${m.ul}</td><td class="r">${m.lw}</td><td class="r">${m.t3}</td><td class="r">${m.b3}</td><td class="r">${m.op>0?'+':''}${m.op.toFixed(1)}%</td></tr>`).join('')}</tbody></table></div>
     <p class="note">${T('Should win shows wins out of the weeks a team beat more than half the league. Opp. strength above 0% means a harder schedule than average, below means an easier one.','Debía ganar muestra victorias de las semanas en que el equipo le ganó a más de la mitad de la liga. Rivales sobre 0% significa un calendario más difícil que el promedio, bajo 0% uno más fácil.')}</p></div>
-  <div class="block"><h2>${T('Best and worst breaks','Mejores y peores rachas de suerte')} · ${scope}</h2><div class="recs">
-    <div class="rec"><h3>${T('Unluckiest losses','Derrotas con peor suerte')}</h3><span class="d">${T('Second best score of the week and still lost, most points first','Segundo mejor puntaje de la semana y aun así perdió, de más a menos puntos')}</span><ol>${lossBy.map(e=>mine(e,false)).join('')}</ol></div>
-    <div class="rec"><h3>${T('Luckiest wins','Victorias con más suerte')}</h3><span class="d">${T('Fewest points scored in a win, compared with that week\'s league average','Menos puntos anotados en una victoria, frente al promedio de la liga esa semana')}</span><ol>${winBy.map(e=>mine(e,true)).join('')}</ol></div>
+  <div class="block"><h2>${T('Schedule Damage','Daño del calendario')} · ${scope}</h2><div class="recs">
+    <div class="rec"><h3>${T('Wasted Great Weeks','Semanas geniales desperdiciadas')}</h3><span class="d">${T('Most points in a regular week and still lost','Más puntos en una semana normal y aun así perdió')}</span><ol>${lossBy.map(e=>mine(e,false)).join('')}</ol></div>
+    <div class="rec"><h3>${T('Free Wins','Victorias gratis')}</h3><span class="d">${T('Fewest points in a regular week and still won','Menos puntos en una semana normal y aun así ganó')}</span><ol>${winBy.map(e=>mine(e,true)).join('')}</ol></div>
   </div></div>`;
 }
 function render(){
