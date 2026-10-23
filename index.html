@@ -1340,6 +1340,20 @@ const awTxt = (w, y) => {
   return `<div class="aw"><b>${esc(w.n)}</b><span class="d">${ev.map(esc).join('<br>')}</span></div>`;
 };
 const awCell = (pair, y) => pair.map((w,i)=>`<div class="awl"><span class="lg">${i?'NL':'AL'}</span>${awTxt(w,y)}</div>`).join('');
+const ROSTER = [
+ [2026,25,17,3,1,1,0,5,2,3,5,['No changes.','Sin cambios.']],
+ [2025,25,17,3,1,1,0,5,2,3,5,['No changes.','Sin cambios.']],
+ [2024,25,17,3,1,1,0,5,2,3,5,['RP slots up from 1 to 2. Roster grows to 25.','Los cupos de RP suben de 1 a 2. El roster crece a 25.']],
+ [2023,24,16,3,1,1,0,5,1,3,5,['OF goes back to 3 regular OF slots.','OF vuelve a 3 cupos normales de OF.']],
+ [2022,24,16,3,1,1,0,5,1,3,5,['OF slots become 2 OF plus 1 CF.','Los cupos de OF pasan a 2 OF más 1 CF.']],
+ [2021,24,16,3,1,1,0,5,1,3,5,['DH comes back. RP cut from 2 to 1. IL up from 3 to 5. OF is split into LF, CF and RF.','Regresa el DH. RP baja de 2 a 1. IL sube de 3 a 5. El OF se divide en LF, CF y RF.']],
+ [2020,22,16,3,0,1,0,5,2,3,3,['OF becomes LF, CF and RF slots, same count. Short season.','El OF pasa a cupos LF, CF y RF, misma cantidad. Temporada corta.']],
+ [2019,22,16,3,0,1,0,5,2,3,3,['RP cut from 4 to 2. IL up from 2 to 3. Back to 16 teams.','RP baja de 4 a 2. IL sube de 2 a 3. Regresan 16 equipos.']],
+ [2018,23,18,3,0,1,0,5,4,3,2,['DH removed. 18 teams, the most ever.','Se elimina el DH. 18 equipos, el máximo histórico.']],
+ [2017,24,19,3,1,1,0,5,4,3,2,['No changes. 16 teams.','Sin cambios. 16 equipos.']],
+ [2016,24,19,3,1,1,0,5,4,3,2,['Pitchers split into 5 SP and 4 RP. 15 teams.','Los pitchers se dividen en 5 SP y 4 RP. 15 equipos.']],
+ [2015,22,17,3,1,1,7,0,0,3,2,['First year on record. Pitchers were 7 generic P slots, no SP or RP split. 12 teams.','Primer año con registro. Los pitchers eran 7 cupos P genéricos, sin SP ni RP. 12 equipos.']]
+];
 function yearsView(){
   const ys = Object.keys(YRD.YR).map(Number).sort((a,b)=>b-a);
   const rows = ys.map(y=>{
@@ -1354,6 +1368,11 @@ function yearsView(){
   return `<div class="block"><h2>${T('Year by year','Año por año')}</h2>
     <p class="sub">${T('League name, podium, #1 draft pick, and the MLB award winners with who owned them and when they were drafted or acquired. 2012 to 2014 come from old ESPN emails, so draft and ownership details are partial.','Nombre de la liga, podio, pick #1 del draft y los ganadores de premios de MLB con quién los tuvo y cuándo los draftearon o adquirieron. 2012 a 2014 vienen de correos viejos de ESPN, así que los datos de draft y propiedad son parciales.')}</p>
     <div class="tbl"><table class="years"><thead><tr><th>${T('Year','Año')}</th><th>${T('League','Liga')}</th><th>${T('Podium','Podio')}</th><th>${T('#1 pick','Pick #1')}</th><th>${T('Cy Young','Cy Young')}</th><th>${T('Rookie of the Year','Novato del Año')}</th><th>MVP</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div>
+  <div class="block"><h2>${T('Roster rules by year','Reglas de roster por año')}</h2>
+    <p class="sub">${T('Roster spots set in ESPN each season. Every year also had 1 C, 1B, 2B, 3B and SS. Before 2015 the settings are not on record.','Cupos de roster configurados en ESPN cada temporada. Todos los años también tuvieron 1 C, 1B, 2B, 3B y SS. Antes de 2015 no hay registro de la configuración.')}</p>
+    <div class="tbl"><table><thead><tr><th>${T('Year','Año')}</th><th class="r">${T('Total','Total')}</th><th class="r">${T('Starters','Titulares')}</th><th class="r">OF</th><th class="r">DH</th><th class="r">UTIL</th><th class="r">P</th><th class="r">SP</th><th class="r">RP</th><th class="r">${T('Bench','Banca')}</th><th class="r">IL</th><th>${T('What changed','Qué cambió')}</th></tr></thead>
+    <tbody>${ROSTER.map(r=>`<tr><td>${r[0]}</td><td class="r"><b>${r[1]}</b></td><td class="r">${r[2]}</td><td class="r">${r[3]}</td><td class="r">${r[4]||'—'}</td><td class="r">${r[5]}</td><td class="r">${r[6]||'—'}</td><td class="r">${r[7]||'—'}</td><td class="r">${r[8]||'—'}</td><td class="r">${r[9]}</td><td class="r">${r[10]}</td><td class="wrapname">${esc(T(r[11][0],r[11][1]))}</td></tr>`).join('')}</tbody></table></div>
   </div>`;
 }
 function earlyView(){
